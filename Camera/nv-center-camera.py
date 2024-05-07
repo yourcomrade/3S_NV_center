@@ -26,6 +26,11 @@ with TLCameraSDK() as sdk:  # Using the SDK in a context manager
             nd_image_array[:,:,0] = numpy_shaped_image  # Assigning the image data to the blue channel
             nd_image_array[:,:,1] = numpy_shaped_image  # Assigning the image data to the green channel
             nd_image_array[:,:,2] = numpy_shaped_image  # Assigning the image data to the red channel
+
+            # Count the number of pixels that is captured by the camera
+            # check for the intensity of the laser by difference in continous frames captured??? Check with Tjeerd.
+            pixel_count = camera.image_height_pixels * camera.image_width_pixels
+            print("Number of pixels: ", pixel_count);
             
             cv2.imshow("Image From TSI Cam", nd_image_array)  # Displaying the image using OpenCV
             cv2.imwrite(f"frame.png", frame.image_buffer)  # Saving the image to a file
