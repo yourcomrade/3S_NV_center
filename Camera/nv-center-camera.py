@@ -1,7 +1,26 @@
 import numpy as np  # Importing numpy for array manipulation
 import cv2  # Importing OpenCV for image processing
+import matplotlib.pyplot as plt
+import time
 from thorlabs_tsi_sdk.tl_camera import TLCameraSDK, OPERATION_MODE  # Importing SDK for Thorlabs camera
 
+
+#Function to capture an image from the camera
+def capture_image(camera):
+    camera.issue_software_trigger()
+    frame = camera.get_pending_frame_or_null()
+    if frame is not None:
+        image_buffer_copy = np.copy(frame.image_buffer)
+        numpy_shaped_image = image_buffer_copy.reshape(camera.image_height_pixels, camera.image_width_pixels)
+        return numpy_shaped_image
+    else:
+        raise Exception("Unable to acquire image")
+#Function to analyze fluorescence intensity
+def analyze_fluorescence(image):
+    avg_intensity = np.mean(image)
+    return avg_intensity
+
+#initialize the camera
 with TLCameraSDK() as sdk:  # Using the SDK in a context manager
     available_cameras = sdk.discover_available_cameras()  # Discovering available cameras
     if len(available_cameras) < 1:  # Checking if no cameras are detected
@@ -14,33 +33,38 @@ with TLCameraSDK() as sdk:  # Using the SDK in a context manager
 
         camera.arm(2)  # Arming the camera for acquisition
 
-        camera.issue_software_trigger()  # Issuing a software trigger to capture an image
+        time_intervals = []
+        fluorescence_intensities = []
 
-        frame = camera.get_pending_frame_or_null()  # Getting the pending frame from the camera
-        if frame is not None:  # Checking if a frame is received
-            print("frame #{} received!".format(frame.frame_count))  # Printing frame count
-            frame.image_buffer  # Accessing the image buffer of the frame
-            image_buffer_copy = np.copy(frame.image_buffer)  # Creating a copy of the image buffer
-            numpy_shaped_image = image_buffer_copy.reshape(camera.image_height_pixels, camera.image_width_pixels)  # Reshaping the image buffer
-            nd_image_array = np.full((camera.image_height_pixels, camera.image_width_pixels, 3), 0, dtype=np.uint8)  # Creating an empty image array
-            nd_image_array[:,:,0] = numpy_shaped_image  # Assigning the image data to the blue channel
-            nd_image_array[:,:,1] = numpy_shaped_image  # Assigning the image data to the green channel
-            nd_image_array[:,:,2] = numpy_shaped_image  # Assigning the image data to the red channel
+        # Defining the duration of the experiment
+        total_duration = 120
+        # Time interval between each measurement
+        time_step = 5 
 
-            # Count the number of pixels that is captured by the camera
-            # check for the intensity of the laser by difference in continous frames captured??? Check with Tjeerd.
-            pixel_count = camera.image_height_pixels * camera.image_width_pixels
-            print("Number of pixels: ", pixel_count);
+        start_time = time.time()
+
+        while(time.time() - start_time) < total_duration:
+            current_time = time.time() - start_time
+            image = capture_image(camera) #capture image
+
+            intensity = analyze_fluorescence(image) #analyze fluorescence
+
+            # Store the data
+            time_intervals.append(current_time)
+            fluorescence_intensities.append(intensity)
             
-            cv2.imshow("Image From TSI Cam", nd_image_array)  # Displaying the image using OpenCV
-            cv2.imwrite(f"frame.png", frame.image_buffer)  # Saving the image to a file
-        else:
-            print("Unable to acquire image, program exiting...")  # Printing error message
-            exit()  # Exiting the program
-            
-        cv2.waitKey(0)  # Waiting for a key press
-        camera.disarm()  # Disarming the camera after acquisition
+            print(f"Time: {current_time:.2f} s, Fluorescence Intensity: {intensity}")
 
-# The context manager takes care of disposing resources properly.
+            # Wait for the next time step
+            time.sleep(time_step)
 
-print("program completed")  # Printing completion message
+        # Plot the results
+        plt.plot(time_intervals, fluorescence_intensities, marker='o')
+        plt.xlabel('Time (s)')
+        plt.ylabel('Fluorescence Intensity (a.u.)')
+        plt.title('Fluorescence Intensity vs. Time')
+        plt.show()
+
+        camera.disarm()
+
+print("Program completed")
