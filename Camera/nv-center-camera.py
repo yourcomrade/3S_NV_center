@@ -15,6 +15,8 @@ def capture_image(camera):
         return numpy_shaped_image
     else:
         raise Exception("Unable to acquire image")
+    
+    
 #Function to analyze fluorescence intensity
 def analyze_fluorescence(image):
     avg_intensity = np.mean(image)
