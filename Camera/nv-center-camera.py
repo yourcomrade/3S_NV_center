@@ -40,9 +40,9 @@ with TLCameraSDK() as sdk:  # Using the SDK in a context manager
         fluorescence_intensities = []
 
         # Defining the duration of the experiment
-        total_duration = 120
+        total_duration = 10
         # Time interval between each measurement
-        time_step = 5 
+        time_step = 2 
 
         start_time = time.time()
 
