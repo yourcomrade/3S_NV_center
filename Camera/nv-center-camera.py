@@ -1,9 +1,10 @@
 import numpy as np  # Importing numpy for array manipulation
 import cv2  # Importing OpenCV for image processing
+import os
 import matplotlib.pyplot as plt
 import time
 from thorlabs_tsi_sdk.tl_camera import TLCameraSDK, OPERATION_MODE  # Importing SDK for Thorlabs camera
-
+os.add_dll_directory(r"C:\Program Files\Thorlabs\Scientific Imaging\Scientific Camera Support\Scientific_Camera_Interfaces\Scientific Camera Interfaces\SDK\Python Toolkit\dlls\64_lib")
 
 #Function to capture an image from the camera
 def capture_image(camera):
