@@ -44,6 +44,13 @@ with TLCameraSDK() as sdk:  # Using the SDK in a context manager
         # Time interval between each measurement
         time_step = 1
 
+        #interactive mode for the plotting
+        plt.ion()  # Turn on interactive mode
+        fig, ax = plt.subplots()
+        line, = ax.plot(time_intervals, fluorescence_intensities, marker='o')
+        ax.set_xlabel('Time (s)')
+        ax.set_ylabel('Fluorescence Intensity (a.u.)')
+        ax.set_title('Fluorescence Intensity vs. Time')
         start_time = time.time()
 
         while(time.time() - start_time) < total_duration:
@@ -58,16 +65,20 @@ with TLCameraSDK() as sdk:  # Using the SDK in a context manager
             
             print(f"Time: {current_time:.2f} s, Fluorescence Intensity: {intensity}")
 
+            # Plot the results
+            # Update the plot
+            line.set_xdata(time_intervals)
+            line.set_ydata(fluorescence_intensities)
+            ax.relim()
+            ax.autoscale_view()
+            plt.draw()
+            plt.pause(0.01)  # Pause to allow the plot to update
+
             # Wait for the next time step
             time.sleep(time_step)
 
-        # Plot the results
-        plt.plot(time_intervals, fluorescence_intensities, marker='o')
-        plt.xlabel('Time (s)')
-        plt.ylabel('Fluorescence Intensity (a.u.)')
-        plt.title('Fluorescence Intensity vs. Time')
+        plt.ioff()  # Turn off interactive mode
         plt.show()
-
         camera.disarm()
 
 print("Program completed")
