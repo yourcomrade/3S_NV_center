@@ -1,29 +1,32 @@
 #include <Arduino.h>
 #include <SPI.h>
 
-#define ADF4351_LE 3 // or Chip select pin
+#define ADF4351_LE 5 // or Chip select pin
 #define LOCK 2
-#define ADF4351_CE 7 // This pin is to turn on or off
+#define ADF4351_CE 4 // This pin is to turn on or off
 
-
+#define SCK 18
+#define MOSI 23
+#define MISO 19
+#define SS 5 
 class simple_adf4351{
   public:
-    uint16_t RFout;
-    uint16_t PFDFreq;
+    uint64_t RFout;
+    uint32_t PFDFreq;
     uint16_t ChannelSpacing;
     uint32_t registers[6] = {0,0,0,0,0};
-    int divider;
+    uint16_t divider;
     double N ;
-    int INTVal ;
-    int MODVal ;
-    int FRACVal;
-    int GCDVal;
-    simple_adf4351 (uint16_t RFout, uint16_t PFDFreq, uint16_t ChannelSpacing):RFout(RFout),
+    uint64_t INTVal ;
+    uint64_t MODVal ;
+    uint64_t FRACVal;
+    uint64_t GCDVal;
+    simple_adf4351 (uint64_t RFout, uint32_t PFDFreq, uint16_t ChannelSpacing):RFout(RFout),
     PFDFreq(PFDFreq), ChannelSpacing(ChannelSpacing){
       pinMode(ADF4351_LE, OUTPUT);          // Setup pins
       pinMode(ADF4351_CE, OUTPUT);
       digitalWrite(ADF4351_LE, HIGH);
-      SPI.begin();                          // Init SPI bus
+      SPI.begin(SCK, MISO, MOSI, SS);                         // Init SPI bus
       SPI.setDataMode(SPI_MODE0);           
       SPI.setBitOrder(MSBFIRST);   
   }
@@ -78,29 +81,30 @@ class simple_adf4351{
     digitalWrite(ADF4351_LE, HIGH);
     digitalWrite(ADF4351_LE, LOW);
   }
-  int SelectDivider(int RFout) {
+  int SelectDivider(uint32_t RFout) {
     int Divider;
   
-    if (RFout >= 2200) Divider = 1;
-    if (RFout < 2200) Divider = 2;
-    if (RFout < 1100) Divider = 4;
-    if (RFout < 550) Divider = 8;
-    if (RFout < 275) Divider = 16;
-    if (RFout < 137.5) Divider = 32;
-    if (RFout < 68.75) Divider = 64;
+    if (RFout >= 2200000) Divider = 1;      // 2200 MHz * 1000 = 2200000 kHz
+    if (RFout < 2200000) Divider = 2;       // 2200 MHz * 1000 = 2200000 kHz
+    if (RFout < 1100000) Divider = 4;       // 1100 MHz * 1000 = 1100000 kHz
+    if (RFout < 550000) Divider = 8;        // 550 MHz * 1000 = 550000 kHz
+    if (RFout < 275000) Divider = 16;       // 275 MHz * 1000 = 275000 kHz  
+    if (RFout < 137500) Divider = 32;       // 137.5 MHz * 1000 = 137500 kHz
+    if (RFout < 68750) Divider = 64;        // 68.75 MHz * 1000 = 68750 kHz
   
     return Divider;
   }
   long SelectReg4(int RFout) {
     long Reg4;
   
-    if (RFout >= 2200) Reg4 = 0x8503FC;
-    if (RFout < 2200) Reg4 = 0x9503FC;
-    if (RFout < 1100) Reg4 = 0xA503FC;
-    if (RFout < 550) Reg4 = 0xB503FC;
-    if (RFout < 275) Reg4 = 0xC503FC;
-    if (RFout < 137.5) Reg4 = 0xD503FC;
-    if (RFout < 68.75) Reg4 = 0xE503FC;
+    if (RFout >= 2200000) Reg4 = 0x8503FC;      // 2200 MHz * 1000 = 2200000 kHz
+    if (RFout < 2200000) Reg4 = 0x9503FC;       // 2200 MHz * 1000 = 2200000 kHz
+    if (RFout < 1100000) Reg4 = 0xA503FC;       // 1100 MHz * 1000 = 1100000 kHz
+    if (RFout < 550000) Reg4 = 0xB503FC;        // 550 MHz * 1000 = 550000 kHz
+    if (RFout < 275000) Reg4 = 0xC503FC;        // 275 MHz * 1000 = 275000 kHz
+    if (RFout < 137500) Reg4 = 0xD503FC;        // 137.5 MHz * 1000 = 137500 kHz
+    if (RFout < 68750) Reg4 = 0xE503FC;         // 68.75 MHz * 1000 = 68750 kHz
+
   
     return Reg4;
   }
@@ -108,20 +112,20 @@ class simple_adf4351{
     return (double(RFout) / (double)PFDFreq) * SelectDivider(RFout);  
   }
 
-  int CalcINT(double N) {
+  uint64_t CalcINT(double N) {
     return int(N);
   }
 
-  int CalcMOD(int PFDFreq, int ChannelSpacing) {
-    return int(1000.0 * PFDFreq / ChannelSpacing);
+  uint64_t CalcMOD(int PFDFreq, int ChannelSpacing) {
+    return int(1000.0 * (PFDFreq/1000) / ChannelSpacing);
   }
 
-  int CalcFRAC(double N, double INTVal, double MODVal) {
-    return int((N - INTVal) * MODVal);
+  uint64_t CalcFRAC(double N, double INTVal, double MODVal) {
+    return uint64_t((N - INTVal) * MODVal);
   }
 
-  int CalcGCD(int A, int B) {
-    int T;
+  uint64_t CalcGCD(uint64_t A, uint64_t B) {
+    uint64_t T;
 
     while (B != 0) {
       T = B;
@@ -156,12 +160,22 @@ class simple_adf4351{
   }
 
 };
-uint16_t freq = 2820;
-simple_adf4351 dev(freq, 25, 100);
+uint64_t freq = 2860000; //khz
+simple_adf4351 dev(freq, 25000, 100);
 void setup() 
 {
-  Serial.begin(9600);
+ 
   pinMode(LOCK,INPUT);
+  // put your setup code here, to run once:
+  Serial.begin(115200);
+  Serial.print("MOSI Pin: ");
+  Serial.println(MOSI);
+  Serial.print("MISO Pin: ");
+  Serial.println(MISO);
+  Serial.print("SCK Pin: ");
+  Serial.println(SCK);
+  Serial.print("SS Pin: ");
+  Serial.println(SS);  
   dev.set_freq(freq);
   dev.setADF4351();
   dev.enable();
@@ -189,6 +203,7 @@ void setup()
     Serial.print(": 0x");
     Serial.println(dev.registers[i], HEX);
   }
+  Serial.println(sizeof(double));  
            
 }
 
@@ -199,14 +214,14 @@ void loop()
   dev.enable();
   Serial.print("Frequency: ");
   Serial.print(freq);
-  Serial.println("Mhz");
-  
+  Serial.println("khz");
+ 
   delay(200);
-  if(freq <= 2920){
-    freq += 1;
+  if(freq < 2890000){
+    freq += 100;
   }
   else{
-    freq = 2820;
+    freq = 2840000;
   }
  
 
