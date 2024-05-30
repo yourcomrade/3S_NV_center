@@ -74,11 +74,17 @@ with TLCameraSDK() as sdk:  # Using the SDK in a context manager
             plt.draw()
             plt.pause(0.01)  # Pause to allow the plot to update
 
+             # Display the image using OpenCV
+            cv2.imshow('Captured Image', image)
+            if cv2.waitKey(1) & 0xFF == ord('q'):
+                break
+
             # Wait for the next time step
             time.sleep(time_step)
 
         plt.ioff()  # Turn off interactive mode
         plt.show()
+        cv2.destroyAllWindows()
         camera.disarm()
 
 print("Program completed")
