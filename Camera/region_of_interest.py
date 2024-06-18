@@ -29,7 +29,7 @@ def find_roi(image):
     return (x, y, w, h)
 
 # Load the image from a file
-image = cv2.imread('"C:\Users\abene\Documents\GitHub Repositories\3S_NV_center\Camera\TEST_IMAGE.png"')  # Replace 'test_image.jpg' with your image file
+image = cv2.imread('TEST_IMAGE.png')  # Replace 'test_image.jpg' with your image file
 
 # Ensure the image is loaded correctly
 if image is None:
