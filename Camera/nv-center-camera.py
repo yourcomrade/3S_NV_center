@@ -67,7 +67,7 @@ with TLCameraSDK() as sdk:  # Using the SDK in a context manager
         exit()
 
     with sdk.open_camera(available_cameras[0]) as camera:  # Opening the first available camera
-        camera.exposure_time_us = 50000  # Increase exposure time to 50 ms to capture more light
+        camera.exposure_time_us = 40  # Increase exposure time to 50 ms to capture more light
         camera.frames_per_trigger_zero_for_unlimited = 0  # Starting camera in continuous mode
         camera.image_poll_timeout_ms = 1000  # Setting polling timeout to 1 second
 

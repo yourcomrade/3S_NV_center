@@ -29,7 +29,7 @@ def find_roi(image):
     return (x, y, w, h)
 
 # Load the image from a file
-image = cv2.imread('test_image_3.png')  # Replace 'test_image.jpg' with your image file
+image = cv2.imread('Laser-test-image.png')  # Replace 'test_image.jpg' with your image file
 
 # Ensure the image is loaded correctly
 if image is None:
