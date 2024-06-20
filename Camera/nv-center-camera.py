@@ -103,7 +103,7 @@ with TLCameraSDK() as sdk:  # Using the SDK in a context manager
         start_time = time.time()
 
         # Open a CSV file to write the data
-        with open('fluorescence_data_intensity_frequency_1.csv', mode='w', newline='') as file:
+        with open('fluorescence_data_intensity_frequency_2.csv', mode='w', newline='') as file:
             writer = csv.writer(file)
             writer.writerow(['Time (s)', 'Fluorescence Intensity (a.u.)', 'Frequency (KHz)'])  # Write the header
 
