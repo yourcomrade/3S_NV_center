@@ -3,6 +3,8 @@ import cv2  # Importing OpenCV for image processing
 import os
 import matplotlib.pyplot as plt
 import time
+import serial
+import re
 import csv  # Importing csv for writing to CSV files
 from thorlabs_tsi_sdk.tl_camera import TLCameraSDK, OPERATION_MODE  # Importing SDK for Thorlabs camera
 
@@ -59,6 +61,15 @@ def analyze_fluorescence(image):
     avg_intensity = np.mean(cropped_image)
     return avg_intensity
 
+# Initialize the serial port
+ser = serial.Serial()
+ser.port = 'COM3'
+ser.baudrate = 115200
+ser.setDTR(False)
+ser.setRTS(False)
+ser.open()
+
+
 # Initialize the camera
 with TLCameraSDK() as sdk:  # Using the SDK in a context manager
     available_cameras = sdk.discover_available_cameras()  # Discovering available cameras
@@ -75,9 +86,10 @@ with TLCameraSDK() as sdk:  # Using the SDK in a context manager
 
         time_intervals = []
         fluorescence_intensities = []
+        frequencies = []
 
         # Defining the duration of the experiment
-        total_duration = 600
+        total_duration = 200
         # Time interval between each measurement
         time_step = 0.1
 
@@ -85,13 +97,13 @@ with TLCameraSDK() as sdk:  # Using the SDK in a context manager
         plt.ion()  # Turn on interactive mode
         fig, ax = plt.subplots()
         line, = ax.plot(time_intervals, fluorescence_intensities, marker='o')
-        ax.set_xlabel('Time (s)')
+        ax.set_xlabel('Frequency (KHz)')
         ax.set_ylabel('Fluorescence Intensity (a.u.)')
         ax.set_title('Fluorescence Intensity vs. Time')
         start_time = time.time()
 
         # Open a CSV file to write the data
-        with open('fluorescence_data.csv', mode='w', newline='') as file:
+        with open('fluorescence_data_intensity_frequency_1.csv', mode='w', newline='') as file:
             writer = csv.writer(file)
             writer.writerow(['Time (s)', 'Fluorescence Intensity (a.u.)', 'Frequency (KHz)'])  # Write the header
 
@@ -105,15 +117,20 @@ with TLCameraSDK() as sdk:  # Using the SDK in a context manager
                 # Store the data
                 time_intervals.append(current_time)
                 fluorescence_intensities.append(intensity)
+                # Get the frequency via COM port
+                text = str(ser.readline().decode('utf-8'))
+                # Extract frequency from the text using regex
+                pattern = r"Frequency: (\d+)khz"
+                frequency = int(re.findall(pattern, text)[0])
                 
-                print(f"Time: {current_time:.2f} s, Fluorescence Intensity: {intensity}")
-
+                print(f"Time: {current_time:.2f} s, Fluorescence Intensity: {intensity}, Frequency: {frequency} kHz")
+                frequencies.append(frequency)
                 # Write the data to the CSV file
-                writer.writerow([current_time, intensity])
+                writer.writerow([current_time, intensity, frequency])
 
                 # Plot the results
                 # Update the plot
-                line.set_xdata(time_intervals)
+                line.set_xdata(frequencies)
                 line.set_ydata(fluorescence_intensities)
                 ax.relim()
                 ax.autoscale_view()
