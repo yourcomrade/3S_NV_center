@@ -54,9 +54,9 @@ def find_roi(image):
 
 # Function to analyze fluorescence intensity in the ROI
 def analyze_fluorescence(image):
-    #x, y, w, h = roi
-    #cropped_image = image[y:y+h, x:x+w]
-    avg_intensity = np.mean(image)
+    x, y, w, h = roi
+    cropped_image = image[y:y+h, x:x+w]
+    avg_intensity = np.mean(cropped_image)
     return avg_intensity
 
 # Initialize the camera
@@ -93,7 +93,7 @@ with TLCameraSDK() as sdk:  # Using the SDK in a context manager
         # Open a CSV file to write the data
         with open('fluorescence_data.csv', mode='w', newline='') as file:
             writer = csv.writer(file)
-            writer.writerow(['Time (s)', 'Fluorescence Intensity (a.u.)'])  # Write the header
+            writer.writerow(['Time (s)', 'Fluorescence Intensity (a.u.)', 'Frequency (KHz)'])  # Write the header
 
             while (time.time() - start_time) < total_duration:
                 current_time = time.time() - start_time
