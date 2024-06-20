@@ -49,14 +49,14 @@ def find_roi(image):
 
     # Get the bounding box of the largest contour
     x, y, w, h = cv2.boundingRect(largest_contour)
-    
+
     return (x, y, w, h)
 
 # Function to analyze fluorescence intensity in the ROI
-def analyze_fluorescence(image, roi):
-    x, y, w, h = roi
-    cropped_image = image[y:y+h, x:x+w]
-    avg_intensity = np.mean(cropped_image)
+def analyze_fluorescence(image):
+    #x, y, w, h = roi
+    #cropped_image = image[y:y+h, x:x+w]
+    avg_intensity = np.mean(image)
     return avg_intensity
 
 # Initialize the camera
@@ -79,7 +79,7 @@ with TLCameraSDK() as sdk:  # Using the SDK in a context manager
         # Defining the duration of the experiment
         total_duration = 600
         # Time interval between each measurement
-        time_step = 1
+        time_step = 0.1
 
         # Interactive mode for the plotting
         plt.ion()  # Turn on interactive mode
@@ -100,7 +100,7 @@ with TLCameraSDK() as sdk:  # Using the SDK in a context manager
                 image = capture_image(camera)  # Capture image
 
                 roi = find_roi(image)  # Detect the ROI
-                intensity = analyze_fluorescence(image, roi)  # Analyze fluorescence in ROI
+                intensity = analyze_fluorescence(image)  # Analyze fluorescence in ROI
 
                 # Store the data
                 time_intervals.append(current_time)
@@ -121,10 +121,10 @@ with TLCameraSDK() as sdk:  # Using the SDK in a context manager
                 plt.pause(0.01)  # Pause to allow the plot to update
 
                 # Save the image with the ROI marked
-                x, y, w, h = roi
-                cv2.rectangle(image, (x, y), (x+w, y+h), (0, 255, 0), 2)
-                filename = f'captured_image_{int(current_time)}.png'
-                cv2.imwrite(filename, image)
+                #x, y, w, h = roi
+                #cv2.rectangle(image, (x, y), (x+w, y+h), (0, 255, 0), 2)
+                #filename = f'captured_image_{int(current_time)}.png'
+                #cv2.imwrite(filename, image)
 
                 # Wait for the next time step
                 time.sleep(time_step)
