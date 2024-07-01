@@ -144,7 +144,7 @@ class simple_adf4351{
   }
 
 };
-uint64_t freq = 2860000; //khz
+uint64_t freq = 2800000; //khz
 simple_adf4351 dev(freq, 25000, 100);
 void setup() 
 {
@@ -170,7 +170,7 @@ void loop()
     freq += 100;
   }
   else{
-    freq = 2840000;
+    freq = 2800000;
   }
  
 
