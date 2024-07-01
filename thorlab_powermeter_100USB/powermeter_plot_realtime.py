@@ -193,13 +193,14 @@ if __name__ == "__main__":
     # Measurement settings
     time_meas = 200  # time measurement in seconds
     num_samples = 10
+    time_interval = 100 # time interval in milisecond
 
     # Setup signal handling for graceful exit
     signal.signal(signal.SIGINT, signal_handler)
     fig.canvas.mpl_connect('close_event', on_close)
 
     # Setup animation
-    ani = FuncAnimation(fig, update, init_func=init, frames=range(time_meas), blit=True, interval=100)
+    ani = FuncAnimation(fig, update, init_func=init, frames=range(time_meas), blit=True, interval=time_interval)
 
     # Start a timer to stop recording after the measurement time
     timer = threading.Timer(time_meas, record_data)
